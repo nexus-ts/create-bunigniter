@@ -1,0 +1,35 @@
+{
+  "name": "create-bunigniter",
+  "version": "0.1.0",
+  "description": "Scaffold a new Bunigniter project — Bun-native fullstack framework",
+  "type": "module",
+  "bin": {
+    "create-bunigniter": "src/index.ts"
+  },
+  "files": [
+    "src/",
+    "templates/",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "start": "bun run src/index.ts"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/nexus-ts/bunigniter",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nexus-ts/bunigniter.git"
+  },
+  "keywords": [
+    "bun",
+    "bunigniter",
+    "scaffold",
+    "cli",
+    "fullstack",
+    "framework"
+  ]
+}
