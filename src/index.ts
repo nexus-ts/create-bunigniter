@@ -102,9 +102,12 @@ function pkgJson(name: string) {
 				"bi:repl": "bun run bi repl",
 			},
 			dependencies: {
-				bunigniter: "^0.3.1",
+				bunigniter: "^0.4.0",
 				"drizzle-orm": "^0.45.0",
-				zod: "^4.4.3",
+				"react": "^19",
+				"react-dom": "^19",
+				"typebox": "1.2.16",
+				zod: "^4",
 			},
 		},
 		null,
@@ -851,6 +854,8 @@ async function main() {
 
 	// Install dependencies prompt
 	const installChoice = await prompt(`  ${Y("?")}  Run ${C("bun install")} now? ${D("(Y/n)")} `)
+	let installFailed = false
+
 	if (installChoice.toLowerCase() !== "n") {
 		console.log()
 		console.log(`  ${D("Installing dependencies...")}`)
@@ -864,14 +869,11 @@ async function main() {
 		if (proc.exitCode === 0) {
 			console.log(`  ${G("✓")}  Dependencies installed`)
 		} else {
+			installFailed = true
 			console.log(`  ${Y("!")}  "bun install" exited with code ${proc.exitCode}`)
-			console.log(`     Run ${C("bun install")} manually inside the project directory.`)
 		}
 	} else {
-		console.log()
-		console.log(`  ${D("Run manually:")}`)
-		console.log(`    cd ${projectName}`)
-		console.log(`    bun install`)
+		installFailed = true
 	}
 
 	// Done
@@ -880,8 +882,11 @@ async function main() {
 	console.log()
 	console.log(`  ${D("Next steps:")}`)
 	console.log(`    cd ${projectName}`)
-	console.log(`    bun run seed         ${D("# Seed the database")}`)
-	console.log(`    bun run dev          ${D("# Start dev server")}`)
+	if (installFailed) {
+		console.log(`    bun install         ${D("# Install dependencies first")}`)
+	}
+	console.log(`    bun run seed         ${D("# Create database & seed data")}`)
+	console.log(`    bun run dev          ${D("# Start dev server at :3000")}`)
 	console.log()
 	console.log(`  ${D("Open http://localhost:3000 in your browser.")}`)
 	console.log()
