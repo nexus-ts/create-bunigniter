@@ -1,6 +1,6 @@
 {
   "name": "create-bunigniter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Scaffold a new Bunigniter project — Bun-native fullstack framework",
   "type": "module",
   "bin": {
