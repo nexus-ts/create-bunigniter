@@ -102,8 +102,8 @@ function pkgJson(name: string) {
 				"bi:repl": "bun run bi repl",
 			},
 			dependencies: {
-				bunigniter: "^0.4.0",
-				"drizzle-orm": "^0.45.0",
+				bunigniter: "^0.4",
+				"drizzle-orm": "^0.45",
 				"react": "^19",
 				"react-dom": "^19",
 				"typebox": "1.2.16",
