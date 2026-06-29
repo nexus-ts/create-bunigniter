@@ -1,0 +1,101 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # for updating release notes
+      id-token: write # for npm provenance
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # fetch all tags for changelog
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Validate package version matches release tag
+        run: |
+          PKG_VER=$(grep '"version"' package.json \
+            | head -1 | sed 's/.*"version": "\(.*\)",/\1/')
+          TAG_VER="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VER" != "$TAG_VER" ]; then
+            echo "Package version ($PKG_VER) != tag ($TAG_VER)"
+            exit 1
+          fi
+          echo "Version match: $PKG_VER"
+
+      - name: Scaffold smoke test
+        run: |
+          cd /tmp
+          rm -rf smoke-test-app
+          bun run "$GITHUB_WORKSPACE/src/index.ts" \
+            smoke-test-app --edge <<< "n"
+          cd smoke-test-app
+          for f in \
+            package.json config/app.ts routes/index.ts \
+            routes/items.ts routes/items/new.ts routes/welcome.ts \
+            routes/api.ts routes/schedule.ts views/_layout.html \
+            views/welcome.html views/items.html views/new-item.html \
+            db/seed.ts dev.ts tsconfig.json .gitignore .env.example \
+            wrangler.toml src/worker.ts db/init.sql; do
+            test -f "$f" && echo "✓ $f" \
+              || { echo "Missing: $f"; exit 1; }
+          done
+          echo "All scaffold files verified (including --edge)"
+
+      - name: Generate release notes
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          PREV_TAG=$(git tag --sort=-version:refname | head -2 | tail -1)
+          echo "## What's Changed" > /tmp/notes.md
+
+          if [ -n "$PREV_TAG" ]; then
+            git log "$PREV_TAG..$TAG" --oneline --no-decorate \
+              | while read hash msg; do
+                  echo "- ${msg} (${hash})" >> /tmp/notes.md
+                done
+          else
+            git log --oneline --no-decorate \
+              | while read hash msg; do
+                  echo "- ${msg} (${hash})" >> /tmp/notes.md
+                done
+          fi
+
+          echo "" >> /tmp/notes.md
+          echo "---" >> /tmp/notes.md
+          echo "" >> /tmp/notes.md
+          echo "### Scaffold Summary" >> /tmp/notes.md
+          echo "- Default: 17 files (routes/, views/, config/, db/)" \
+            >> /tmp/notes.md
+          echo "- With --edge: +3 files" \
+            >> /tmp/notes.md
+          echo "  (wrangler.toml, src/worker.ts, db/init.sql)" \
+            >> /tmp/notes.md
+          echo "- Bun requirement: >= 1.3.0" >> /tmp/notes.md
+
+          echo "Release notes generated"
+
+      - name: Update GitHub release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit "$GITHUB_REF_NAME" \
+            --notes-file /tmp/notes.md \
+            --verify-tag
+
+      - name: Publish to npm
+        run: |
+          npm config set //registry.npmjs.org/:_authToken \
+            ${{ secrets.NPM_TOKEN }}
+          npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

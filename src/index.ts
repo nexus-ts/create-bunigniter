@@ -122,7 +122,7 @@ function pkgJson(name: string) {
 			dependencies: {
 				bunigniter: "^0.4",
 				"drizzle-orm": "^0.45",
-				elysia: "^2.0.0-exp.9",
+				elysia: "^2.0.0-exp.12",
 				"react": "^19",
 				"react-dom": "^19",
 				"typebox": "1.2.16",
