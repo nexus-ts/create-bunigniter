@@ -10,7 +10,7 @@
 Bunigniter is a Bun-native fullstack framework — CodeIgniter's DX × Elysia v2 performance × Edge-ready.
 
 ```bash
-bun create bunigniter my-app
+bun create bunigniter@latest my-app
 cd my-app
 bun run seed
 bun run dev
@@ -42,45 +42,53 @@ export class Users extends Controller {
 
 ## Usage
 
+> ⚠️ **Always use `@latest`** — Bun caches `create-*` packages locally. Without `@latest`,
+> you may install an older scaffold.
+
 ```bash
-bun create bunigniter                 # Interactive prompt
-bun create bunigniter my-app          # With project name
-bun create bunigniter my-app --edge   # With Cloudflare Workers support
-npx create-bunigniter my-app          # npm alternative
+bun create bunigniter@latest my-app     # Recommended — always the latest
+bunx create-bunigniter@latest my-app    # Same result
+bun create bunigniter my-app            # Uses Bun cache (may be outdated)
 ```
 
-The CLI scaffolds a working project with CRUD, API handler, database seeder, and styled templates.
+`create-bunigniter` creates the project directory, installs `bunigniter`, then delegates scaffolding to Bunigniter's **`bi new`** interactive wizard.
 
-**With the `--edge` (or `-e`) flag**, it also generates Cloudflare Workers deployment files — `wrangler.toml`, `src/worker.ts`, and `db/init.sql`.
+### Interactive wizard (via `bi new`)
+
+After installation, you'll be prompted to choose:
+
+1. **Runtime** — `bun` (Bun-only) or `cloudflare` (Bun + Cloudflare Workers)
+2. **Database** — `sqlite`, `postgresql`, `mysql`, or `none`
+3. **OpenAPI docs** — yes / no
+4. **Template** — `simple` (welcome page) or `todo` (coming soon)
+5. **Install dependencies** — yes / no
+
+> The `--edge` flag is **no longer needed** — runtime selection is now part of the interactive wizard.
 
 ---
 
 ## What you get
 
-### Default (Bun-only): 17 files
+### Default (simple template, Bun + SQLite): 11 files
 
 ```
 my-app/
-├── config/app.ts           # DB, port, middleware, CORS
+├── config/app.ts           # DB port, middleware, CORS
 ├── routes/
-│   ├── index.ts            # GET  / — redirect to /items
-│   ├── items.ts            # CRUD controller (class-based)
-│   ├── items/new.ts        # GET  /items/new — create form
-│   ├── welcome.ts          # GET  /welcome — Rendu template
-│   ├── api.ts              # GET|POST /api — handler-style
-│   └── schedule.ts         # GET  /schedule — cron demo
+│   ├── index.ts            # GET / — welcome page (Home controller)
+│   └── api.ts              # GET /api — API handler
 ├── views/
 │   ├── _layout.html        # Auto-layout wrapper
-│   ├── welcome.html        # Rendu template (PHP-style)
-│   ├── items.html          # Items list + CRUD forms
-│   └── new-item.html       # Create form
+│   └── welcome.html        # Welcome page (Rendu template)
 ├── db/seed.ts              # SQLite seeder w/ sample data
 ├── dev.ts                  # Entry point
 ├── package.json            # Scripts: dev, seed, bi, repl
-└── tsconfig.json           # JSX + Bundler resolution
+├── tsconfig.json           # TypeScript config
+├── .gitignore              # Git ignore rules
+└── .env.example            # Environment variables
 ```
 
-### With `--edge` flag: +3 additional files
+### With Cloudflare runtime: +3 additional files
 
 ```
 my-app/
@@ -96,15 +104,13 @@ my-app/
 
 | Feature | File | Example |
 |---------|------|---------|
-| Class-based controller | `routes/items.ts` | `this.db`, `this.validate()`, `this.view()`, `this.redirect()` |
-| Handler-style routes | `routes/api.ts` | `defineHandler` + Zod validation |
+| Class-based controller | `routes/index.ts` | `this.view()`, `this.json()` |
+| Handler-style routes | `routes/api.ts` | `defineHandler` for GET/POST |
 | Rendu templates | `views/*.html` | `<?= variable ?>`, `<? for(...) { ?>` |
 | Auto-layout | `views/_layout.html` | `<?= slot ?>` wraps all pages |
-| Scheduled tasks | `routes/schedule.ts` | `schedule.every(10000).do(fn)` |
 | SQLite | `db/seed.ts` | Zero-config, auto-created |
-| Input validation | Controller | CI-style string rules or Zod schemas |
-| Request API | Controller | `this.request.only()`, `.get()`, `.post()`, `.has()`, etc. |
-| Edge deployment | `src/worker.ts` | Elysia + D1 + inline HTML on Cloudflare Workers |
+| Database seeder | `db/seed.ts` | `bun run seed` creates tables + sample data |
+| Edge deployment | `src/worker.ts` | Elysia + D1 on Cloudflare Workers (if runtime=cloudflare) |
 | D1 database | `db/init.sql` | SQLite-compatible serverless DB on Cloudflare |
 
 ---
@@ -115,18 +121,16 @@ my-app/
 
 ```bash
 cd my-app
-bun install           # Install dependencies
 bun run seed          # Seed database (3 sample items)
 bun run dev           # Dev server at :3000
 bun run bi repl       # Interactive REPL with db, cache, http
 bun run bi list       # List all registered routes
 ```
 
-### Cloudflare Workers Deployment (with `--edge`)
+### Cloudflare Workers Deployment (if runtime=cloudflare)
 
 ```bash
 cd my-app
-bun install
 npx wrangler login                                          # Login to Cloudflare
 npx wrangler d1 create my-app-db                            # Create D1 database
 # → Copy the database_id into wrangler.toml
@@ -136,16 +140,12 @@ bun run cf:dev                                              # Local dev at :8787
 bun run cf:deploy                                           # Deploy to Cloudflare
 ```
 
-> **Note:** The `src/worker.ts` is a separate entry point for Cloudflare Workers.
-> The local Bun server (`bun run dev`) and the Cloudflare Worker (`wrangler dev`)
-> run independently — changes to one don't affect the other.
-
 ---
 
 ## Requirements
 
-- [Bun](https://bun.sh) >= 1.3.0 (for local development)
-- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (for Cloudflare deployment — installed automatically with `--edge`)
+- [Bun](https://bun.sh) >= 1.3.0
+- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (for Cloudflare deployment — installed automatically when runtime=cloudflare)
 
 ---
 
@@ -161,6 +161,7 @@ bun run cf:deploy                                           # Deploy to Cloudfla
 | OpenAPI | Auto-generated at `/openapi` with Scalar UI |
 | CLI | `bun run bi make:controller`, `make:model`, etc. |
 | Edge | `bun run bi build:edge` for Cloudflare Workers |
+| Init existing project | `bun run bi init` — scaffold into current directory |
 
 ### Cloudflare Workers
 
@@ -168,8 +169,6 @@ bun run cf:deploy                                           # Deploy to Cloudfla
 |-------|-------|
 | Deploy | `bun run cf:deploy` |
 | D1 Console | `npx wrangler d1 execute my-app-db --command "SELECT * FROM items"` |
-| D1 Dashboard | [cloudflare.com](https://dash.cloudflare.com/) → Workers & Pages → D1 |
-| Environment | Set `CORS_ORIGIN`, `DEBUG` in `wrangler.toml` under `[vars]` |
 | Custom Domain | Add `routes = ["example.com/*"]` to `wrangler.toml` |
 | Logs | `npx wrangler tail` for real-time logs |
 
