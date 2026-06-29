@@ -99,6 +99,7 @@ async function handleArgs(): Promise<string | null> {
 			console.log(`  ${D("Options:")}`)
 			console.log(`    --help, -h        Show this help`)
 			console.log(`    --version, -V     Show version`)
+			console.log(`    --yes, -y         Skip prompts, use defaults (CI)`)
 			console.log()
 			exit(0)
 		}
@@ -173,13 +174,15 @@ async function main() {
 		console.log(`  ${D("Run 'bun install' manually, then continue.")}`)
 	}
 
-	// Delegate to bi init (interactive prompts)
+	// Delegate to bi init (interactive prompts). Pass --yes if requested.
+	const useYes = process.argv.includes("--yes") || process.argv.includes("-y")
+	const biArgs = useYes ? ["bun", "run", "bi", "init", "--yes"] : ["bun", "run", "bi", "init"]
 	console.log()
-	console.log(`  ${G("◇")}  Launching interactive scaffold: ${C("bun run bi init")}`)
+	console.log(`  ${G("◇")}  Launching ${useYes ? "non-interactive" : "interactive"} scaffold: ${C(biArgs.join(" "))}`)
 	console.log()
 
-	const scaffoldProc = Bun.spawnSync(["bun", "run", "bi", "init"], {
-		stdout: "inherit",	stderr: "inherit",	stdin: "inherit",
+	const scaffoldProc = Bun.spawnSync(biArgs, {
+		stdout: "inherit", stderr: "inherit", stdin: "inherit",
 	})
 
 	if (scaffoldProc.exitCode !== 0) {

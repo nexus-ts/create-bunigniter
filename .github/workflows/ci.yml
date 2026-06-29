@@ -28,7 +28,7 @@ jobs:
           # create-bunigniter creates dir, installs bunigniter, then runs bi init --yes
           cd /tmp
           rm -rf test-scaffold-app
-          bun run "$GITHUB_WORKSPACE/src/index.ts" test-scaffold-app
+          bun run "$GITHUB_WORKSPACE/src/index.ts" test-scaffold-app --yes
           cd test-scaffold-app
           for f in \
             package.json config/app.ts routes/index.ts \

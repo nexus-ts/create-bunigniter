@@ -37,7 +37,7 @@ jobs:
         run: |
           cd /tmp
           rm -rf smoke-test-app
-          bun run "$GITHUB_WORKSPACE/src/index.ts" smoke-test-app
+          bun run "$GITHUB_WORKSPACE/src/index.ts" smoke-test-app --yes
           cd smoke-test-app
           for f in \
             package.json config/app.ts routes/index.ts \
