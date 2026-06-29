@@ -173,15 +173,13 @@ async function main() {
 		console.log(`  ${D("Run 'bun install' manually, then continue.")}`)
 	}
 
-	// Delegate to bi init --yes (defaults: bun runtime, sqlite, no openapi, simple template)
+	// Delegate to bi init (interactive prompts)
 	console.log()
-	console.log(`  ${G("◇")}  Running scaffold: ${C("bun run bi init --yes")}`)
+	console.log(`  ${G("◇")}  Launching interactive scaffold: ${C("bun run bi init")}`)
 	console.log()
 
-	const scaffoldProc = Bun.spawnSync(["bun", "run", "bi", "init", "--yes"], {
-		stdout: "inherit",
-		stderr: "inherit",
-		stdin: "inherit",
+	const scaffoldProc = Bun.spawnSync(["bun", "run", "bi", "init"], {
+		stdout: "inherit",	stderr: "inherit",	stdin: "inherit",
 	})
 
 	if (scaffoldProc.exitCode !== 0) {
