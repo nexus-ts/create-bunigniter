@@ -1,3 +1,5 @@
+> **⚠️ Experimental** — This project is actively evolving. APIs may change before 1.0.
+
 # create-bunigniter
 
 [![npm](https://img.shields.io/npm/v/create-bunigniter)](https://www.npmjs.com/package/create-bunigniter)
